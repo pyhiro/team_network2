@@ -80,6 +80,13 @@ void HandleTCPClient(int clntSocket)
     printf("received: %s\n", echoBuffer);
     strcpy(echoBuffer, "新小岩");  
   }
+  if (!strcmp(echoBuffer, "c言語は")) {
+    for (int i=0; i<BUFSIZ; i++) {
+      echoBuffer[i] = '\0';
+    }
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, "嫌い");  
+  }
   if (!strcmp(echoBuffer, "hello")) {
     printf("received: %s\n", echoBuffer);
     if (rand() % 2 == 0) {
@@ -122,10 +129,20 @@ void HandleTCPClient(int clntSocket)
         } 
      }
     }
+
+    if (!strcmp(echoBuffer, "c言語は")) {
+      for (int i=0; i<BUFSIZ; i++) {
+        echoBuffer[i] = '\0';
+      }
+      printf("received: %s\n", echoBuffer);
+      strcpy(echoBuffer, "嫌い");  
+    }
+
     if (!strcmp(echoBuffer, "age")) {
       printf("received: %s\n", echoBuffer);
       strcpy(echoBuffer, "25歳です。");  
     }
+
     if (!strcmp(echoBuffer, "time")) {
       char s[256];
       time_t timer;
@@ -137,14 +154,17 @@ void HandleTCPClient(int clntSocket)
       printf("received: %s\n", echoBuffer);
       strcpy(echoBuffer, s);  
     }
+
     if (!strcmp(echoBuffer, "萩原先生は")) {
       printf("received: %s\n", echoBuffer);
       strcpy(echoBuffer, "優しい");  
     }
+
     if (!strcmp(echoBuffer, "好きな言語")) {
       printf("received: %s\n", echoBuffer);
       strcpy(echoBuffer, "python,Go");  
     }
+
     if (!strcmp(echoBuffer, "今の時刻は")) {
       char s[256];
       time_t timer;
