@@ -6,7 +6,7 @@
 #include <unistd.h> /* close()に必要 */
 
 #define MAXPENDING 5 /* 同時にキュー可能な接続要求の最大数 */
-#define RCVBUFSIZE 32 /* 受信バッファのサイズ */
+#define RCVBUFSIZE 1024 /* 受信バッファのサイズ */
 
 void DieWithError(char *errorMessage); /* エラー処理関数 */
 void HandleTCPClient(int clntSocket); /* TCPクライアント処理関数 */
@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
   struct sockaddr_in echoClntAddr;  /* クライアントアドレス */
   unsigned short echoServPort;  /* サーバポート */
   unsigned int clntLen; /* クライアントのアドレス構造体の長さ */
+
+  char buf[1024];
 
   if (argc != 2)  /* 引数の数が正しいか確認 */
   {
@@ -60,7 +62,6 @@ int main(int argc, char *argv[])
     /* clntSockはクライアントに接続済み */
 
     printf("Handling client %s\n", inet_ntoa(echoClntAddr.sin_addr));
-
     HandleTCPClient(clntSock);
   }
   /* この部分には到達しない */

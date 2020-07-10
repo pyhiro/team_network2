@@ -5,7 +5,7 @@
 #include <string.h>	/* memset()に必要 */
 #include <unistd.h>	/* close()に必要 */
 
-#define RCVBUFSIZE 32	/* 受信バッファのサイズ */
+#define RCVBUFSIZE 1024	/* 受信バッファのサイズ */
 
 void DieWithError(char *errorMessage);	/* エラー処理関数 */
 
@@ -55,6 +55,9 @@ int main(int argc, char *argv[])
 		/* 文字列をサーバに送信 */
 		if (send(sock, echoString, echoStringLen, 0) != echoStringLen)
 			DieWithError("send() sent a different number of bytes than expected");
+		for (int i=0; i<=BUFSIZ; i++) { 
+		echoBuffer[i] = '\0'; 
+		}
 
 		/* 同じ文字列をサーバから受信 */
 		totalBytesRcvd = 0;
@@ -71,6 +74,9 @@ int main(int argc, char *argv[])
 		}
 		if (!strcmp(echoString, "quit")) {
 			break;
+		}
+		for (int i=0; i<BUFSIZ; i++) {
+		echoBuffer[i] = '\0';
 		}
 		printf("\n");	/* 最後の改行を出力 */
 	}	

@@ -1,31 +1,180 @@
-#include <stdio.h>  /* printf()¡¢fprintf()¤ËÉ¬Í× */
-#include <sys/socket.h> /* recv()¡¢send()¤ËÉ¬Í× */
-#include <unistd.h> /* close()¤ËÉ¬Í× */
+#include <stdio.h>  /* printf()ï¿½ï¿½fprintf()ï¿½ï¿½É¬ï¿½ï¿½ */
+#include <sys/socket.h> /* recv()ï¿½ï¿½send()ï¿½ï¿½É¬ï¿½ï¿½ */
+#include <unistd.h> /* close()ï¿½ï¿½É¬ï¿½ï¿½ */
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
 
-#define RCVBUFSIZE 32 /* ¼õ¿®¥Ð¥Ã¥Õ¥¡¤Î¥µ¥¤¥º */
-
-void DieWithError(char *errorMessage);  /* ¥¨¥é¡¼½èÍý´Ø¿ô */
+#define RCVBUFSIZE 256 /* ï¿½ï¿½ï¿½ï¿½ï¿½Ð¥Ã¥Õ¥ï¿½ï¿½Î¥ï¿½ï¿½ï¿½ï¿½ï¿½ */
+int tmp;
+void DieWithError(char *errorMessage);  /* ï¿½ï¿½ï¿½é¡¼ï¿½ï¿½ï¿½ï¿½ï¿½Ø¿ï¿½ */
 
 void HandleTCPClient(int clntSocket)
 {
-  char echoBuffer[RCVBUFSIZE];  /* ¥¨¥³¡¼Ê¸»úÎó¤Î¥Ð¥Ã¥Õ¥¡ */
-  int recvMsgSize;  /* ¼õ¿®¥á¥Ã¥»¡¼¥¸¤Î¥µ¥¤¥º */
+  char echoBuffer[RCVBUFSIZE];  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¸ï¿½ï¿½ï¿½ï¿½Î¥Ð¥Ã¥Õ¥ï¿½ */
+  int recvMsgSize;  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¥ï¿½ï¿½ï¿½ï¿½ï¿½ */
 
-  /* ¥¯¥é¥¤¥¢¥ó¥È¤«¤é¤Î¼õ¿®¥á¥Ã¥»¡¼¥¸ */
+  for (int i=0; i<BUFSIZ; i++) {
+    echoBuffer[i] = '\0';
+  }
+  /* ï¿½ï¿½ï¿½é¥¤ï¿½ï¿½ï¿½ï¿½È¤ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½ï¿½ï¿½Ã¥ï¿½ï¿½ï¿½ï¿½ï¿½ */
   if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
     DieWithError("recv() failed");
 
-  /* ¼õ¿®¤·¤¿Ê¸»úÎó¤òÁ÷¿®¤·¡¢Å¾Á÷¤¬½ªÎ»¤·¤Æ¤¤¤Ê¤±¤ì¤Ð¼¡¤ò¼õ¿®¤¹¤ë */
-  while (recvMsgSize > 0) /* ¥¼¥í¤ÏÅ¾Á÷¤Î½ªÎ»¤ò°ÕÌ£¤¹¤ë */
-  {
-    /* ¥á¥Ã¥»¡¼¥¸¤ò¥¯¥é¥¤¥¢¥ó¥È¤Ë¥¨¥³¡¼¥Ð¥Ã¥¯¤¹¤ë */
-    if (send(clntSocket, echoBuffer, recvMsgSize, 0) != recvMsgSize)
-      DieWithError("send() failed");
+  if (!strcmp(echoBuffer, "anagram")) {
+    if (recvMsgSize % 2 == 0) {
+      printf("received: %s\n", echoBuffer);
+      
+      for (int i=0; i < recvMsgSize/2; i++) {
+        tmp = echoBuffer[i];
+        echoBuffer[i] = echoBuffer[recvMsgSize-1-i]; 
+        echoBuffer[recvMsgSize-1-i] = tmp;
+      } 
+    } else {
+      printf("received: %s\n", echoBuffer);
+      for (int i=0; i <= recvMsgSize/2; i++) {
+        tmp = echoBuffer[i];
+        echoBuffer[i] = echoBuffer[recvMsgSize-1-i]; 
+        echoBuffer[recvMsgSize-1-i] = tmp;
+      } 
+    }
+  }
+  if (!strcmp(echoBuffer, "age")) {
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, "25æ­³ã§ã™ã€‚");  
+  }
+  if (!strcmp(echoBuffer, "time")) {
+    char s[256];
+    time_t timer;
+    struct tm *timeptr;
 
-    /* ¼õ¿®¤¹¤ë¥Ç¡¼¥¿¤¬»Ä¤Ã¤Æ¤¤¤Ê¤¤¤«³ÎÇ§¤¹¤ë */
-    if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
-      DieWithError("recv() failed");
+    timer = time(NULL);
+    timeptr = localtime(&timer);
+    strftime(s, 256, "%Yå¹´%mæœˆ%dæ—¥%Hæ™‚%Måˆ†", timeptr);
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, s);  
+  }
+  if (!strcmp(echoBuffer, "è©åŽŸå…ˆç”Ÿã¯")) {
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, "å„ªã—ã„");  
+  }
+  if (!strcmp(echoBuffer, "å¥½ããªè¨€èªžã¯")) {
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, "python");  
+  }
+  if (!strcmp(echoBuffer, "ä»Šã®æ™‚åˆ»ã¯")) {
+    char s[256];
+    time_t timer;
+    struct tm *timeptr;
+
+    timer = time(NULL);
+    timeptr = localtime(&timer);
+    strftime(s, 256, "%Yå¹´%mæœˆ%dæ—¥%Hæ™‚%Måˆ†", timeptr);
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, s);  
+  }
+  if (!strcmp(echoBuffer, "ä½æ‰€ã¯")) {
+    for (int i=0; i<BUFSIZ; i++) {
+      echoBuffer[i] = '\0';
+    }
+    printf("received: %s\n", echoBuffer);
+    strcpy(echoBuffer, "æ–°å°å²©");  
+  }
+  if (!strcmp(echoBuffer, "hello")) {
+    printf("received: %s\n", echoBuffer);
+    if (rand() % 2 == 0) {
+      strcpy(echoBuffer, "world");  
+    } else {
+      strcpy(echoBuffer, "hello");  
+    }
   }
 
-  close(clntSocket);  /* ¥¯¥é¥¤¥¢¥ó¥È¥½¥±¥Ã¥È¤ò¥¯¥í¡¼¥º¤¹¤ë */
+
+  if (!strcmp(echoBuffer, "squit")) {
+    close(clntSocket);    
+  }
+
+  /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½Æ¤ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+  while (recvMsgSize > 0) /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¾ï¿½ï¿½ï¿½Î½ï¿½Î»ï¿½ï¿½ï¿½Ì£ï¿½ï¿½ï¿½ï¿½ */
+  {
+    /* ï¿½ï¿½Ã¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ò¥¯¥é¥¤ï¿½ï¿½ï¿½ï¿½È¤Ë¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¥Ã¥ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    send(clntSocket, echoBuffer, 30, 0);
+    for (int i=0; i<=256; i++) { 
+      echoBuffer[i] = '\0'; 
+    }
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¤Ã¤Æ¤ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½ï¿½ï¿½Ç§ï¿½ï¿½ï¿½ï¿½ */
+    if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
+      DieWithError("recv() failed");
+
+    if (!strcmp(echoBuffer, "anagram")) { 
+      if (recvMsgSize % 2 == 0) { 
+        printf("received: %s\n", echoBuffer); 
+        for (int i=0; i < recvMsgSize/2; i++) { 
+          tmp = echoBuffer[i]; echoBuffer[i] = echoBuffer[recvMsgSize-1-i]; 
+          echoBuffer[recvMsgSize-1-i] = tmp; 
+        } 
+      } else { 
+        printf("received: %s\n", echoBuffer); 
+        for (int i=0; i <= recvMsgSize/2; i++) { 
+          tmp = echoBuffer[i]; 
+          echoBuffer[i] = echoBuffer[recvMsgSize-1-i];                            
+          echoBuffer[recvMsgSize-1-i] = tmp;
+        } 
+     }
+    }
+    if (!strcmp(echoBuffer, "age")) {
+      printf("received: %s\n", echoBuffer);
+      strcpy(echoBuffer, "25æ­³ã§ã™ã€‚");  
+    }
+    if (!strcmp(echoBuffer, "time")) {
+      char s[256];
+      time_t timer;
+      struct tm *timeptr;
+
+      timer = time(NULL);
+      timeptr = localtime(&timer);
+      strftime(s, 256, "%Yå¹´%mæœˆ%dæ—¥%Hæ™‚%Måˆ†", timeptr);
+      printf("received: %s\n", echoBuffer);
+      strcpy(echoBuffer, s);  
+    }
+    if (!strcmp(echoBuffer, "è©åŽŸå…ˆç”Ÿã¯")) {
+      printf("received: %s\n", echoBuffer);
+      strcpy(echoBuffer, "å„ªã—ã„");  
+    }
+    if (!strcmp(echoBuffer, "å¥½ããªè¨€èªž")) {
+      printf("received: %s\n", echoBuffer);
+      strcpy(echoBuffer, "python,Go");  
+    }
+    if (!strcmp(echoBuffer, "ä»Šã®æ™‚åˆ»ã¯")) {
+      char s[256];
+      time_t timer;
+      struct tm *timeptr;
+
+      timer = time(NULL);
+      timeptr = localtime(&timer);
+      strftime(s, 256, "%Yå¹´%mæœˆ%dæ—¥%Hæ™‚%Måˆ†", timeptr);
+      printf("received: %s\n", echoBuffer);
+      strcpy(echoBuffer, s);  
+    }
+    if (!strcmp(echoBuffer, "ä½æ‰€ã¯")) {
+      printf("received: %s\n", echoBuffer);
+      char s[256] = "ã—ã‚“ã“ã„ã‚";
+      strcpy(echoBuffer, s);  
+    }
+
+    if (!strcmp(echoBuffer, "hello")) {
+      printf("received: %s\n", echoBuffer);
+      if (rand() % 2 == 0) {
+        strcpy(echoBuffer, "world");  
+      } else {
+        strcpy(echoBuffer, "hello");  
+      }
+    }
+
+    if (!strcmp(echoBuffer, "squit")) {
+      close(clntSocket);    
+    }
+  }
+
+  close(clntSocket);  /* ï¿½ï¿½ï¿½é¥¤ï¿½ï¿½ï¿½ï¿½È¥ï¿½ï¿½ï¿½ï¿½Ã¥È¤ò¥¯¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 }
