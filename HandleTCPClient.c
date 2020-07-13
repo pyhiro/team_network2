@@ -1,26 +1,26 @@
-#include <stdio.h>  /* printf()��fprintf()��ɬ�� */
-#include <sys/socket.h> /* recv()��send()��ɬ�� */
-#include <unistd.h> /* close()��ɬ�� */
+#include <stdio.h>  
+#include <sys/socket.h> 
+#include <unistd.h> 
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
 
-#define RCVBUFSIZE 256 /* �����Хåե��Υ����� */
+#define RCVBUFSIZE 256 
 int tmp;
-void DieWithError(char *errorMessage);  /* ���顼�����ؿ� */
+void DieWithError(char *errorMessage); 
 
 void HandleTCPClient(int clntSocket)
 {
-  char echoBuffer[RCVBUFSIZE];  /* ������ʸ����ΥХåե� */
-  int recvMsgSize;  /* ������å������Υ����� */
+  char echoBuffer[RCVBUFSIZE];  
+  int recvMsgSize;  
 
-  for (int i=0; i<BUFSIZ; i++) {
+  for (int i=0; i<50; i++) {
     echoBuffer[i] = '\0';
   }
-  /* ���饤����Ȥ���μ�����å����� */
+
   if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
     DieWithError("recv() failed");
-
+  
   if (!strcmp(echoBuffer, "anagram")) {
     if (recvMsgSize % 2 == 0) {
       printf("received: %s\n", echoBuffer);
@@ -93,15 +93,12 @@ void HandleTCPClient(int clntSocket)
       strcpy(echoBuffer, "I don't know!");
     }
 
-  /* ��������ʸ�������������ž������λ���Ƥ��ʤ���м���������� */
-  while (recvMsgSize > 0) /* ������ž���ν�λ���̣���� */
+  while (recvMsgSize > 0) 
   {
-    /* ��å������򥯥饤����Ȥ˥������Хå����� */
     send(clntSocket, echoBuffer, 30, 0);
     for (int i=0; i<=256; i++) { 
       echoBuffer[i] = '\0'; 
     }
-    /* ��������ǡ������ĤäƤ��ʤ�����ǧ���� */
     if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
       DieWithError("recv() failed");
 
@@ -178,5 +175,5 @@ void HandleTCPClient(int clntSocket)
       }
   }
 
-  close(clntSocket);  /* ���饤����ȥ����åȤ򥯥��������� */
+  close(clntSocket);  
 }

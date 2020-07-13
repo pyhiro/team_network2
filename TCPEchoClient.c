@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
 	struct sockaddr_in echoServAddr;/* エコーサーバのアドレス */
 	unsigned short echoServPort;	/* エコーサーバのポート番号 */
 	char *servIP;			/* サーバのIPアドレス（dotted-quad） */
-	char echoString[256];	        /* エコーサーバに送信する文字列 */
-	char echoBuffer[RCVBUFSIZE];	/* エコー文字列用のバッファ */
+	char echoString[200];	        /* エコーサーバに送信する文字列 */
+	char echoBuffer[RCVBUFSIZE-1];	/* エコー文字列用のバッファ */
 	unsigned int echoStringLen;	/* エコーする文字列のサイズ */
 	int bytesRcvd, totalBytesRcvd;	/* 一回のrecv()で読み取られる
 					   バイト数と全バイト数 */
@@ -49,19 +49,20 @@ int main(int argc, char *argv[])
 	if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
 		DieWithError("connect() failed");
 	while (1) {
-		scanf("%s", &echoString);
+		scanf("%s", echoString);
 		echoStringLen = strlen(echoString);	/* 入力データの長さを調べる */
-
+		
 		/* 文字列をサーバに送信 */
 		if (send(sock, echoString, echoStringLen, 0) != echoStringLen)
 			DieWithError("send() sent a different number of bytes than expected");
-		for (int i=0; i<=BUFSIZ; i++) { 
-		echoBuffer[i] = '\0'; 
-		}
+		
+		// for (int i=0; i<=100; i++) { 
+		// echoBuffer[i] = '\0'; 
+		// }
 
 		/* 同じ文字列をサーバから受信 */
 		totalBytesRcvd = 0;
-		printf("Received: ");	/* エコーされた文字列を表示するための準備 */
+	
 		while (totalBytesRcvd < echoStringLen)
 		{
 			/* バッファサイズに達するまで（ヌル文字用の1バイトを除く）
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 				DieWithError("recv() failed or connection closed prematurely");
 			totalBytesRcvd += bytesRcvd;	/* 総バイト数の集計 */
 			echoBuffer[bytesRcvd] = '\0' ;	/* 文字列の終了 */
-			printf(echoBuffer);	/* エコーバッファの表示 */
+			printf("%s", echoBuffer);	/* エコーバッファの表示 */
 		}
 		if (!strcmp(echoString, "quit")) {
 			break;
