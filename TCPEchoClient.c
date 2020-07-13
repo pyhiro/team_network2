@@ -5,7 +5,7 @@
 #include <string.h>	/* memset()に必要 */
 #include <unistd.h>	/* close()に必要 */
 
-#define RCVBUFSIZE 1024	/* 受信バッファのサイズ */
+#define RCVBUFSIZE 256	/* 受信バッファのサイズ */
 
 void DieWithError(char *errorMessage);	/* エラー処理関数 */
 
