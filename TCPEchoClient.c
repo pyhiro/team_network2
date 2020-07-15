@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in echoServAddr;/* エコーサーバのアドレス */
 	unsigned short echoServPort;	/* エコーサーバのポート番号 */
 	char *servIP;			/* サーバのIPアドレス（dotted-quad） */
-	char echoString[200];	        /* エコーサーバに送信する文字列 */
+	char echoString[201];	        /* エコーサーバに送信する文字列 */
 	char echoBuffer[RCVBUFSIZE-1];	/* エコー文字列用のバッファ */
 	unsigned int echoStringLen;	/* エコーする文字列のサイズ */
 	int bytesRcvd, totalBytesRcvd;	/* 一回のrecv()で読み取られる
@@ -38,14 +38,14 @@ int main(int argc, char *argv[])
 	/* TCPによる信頼性の高いストリームソケットを作成 */
 	if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 		DieWithError("socket() failed");
-
+  	memset(&echoString[0], '\0', 190);
+  	memset(&echoBuffer[0], '\0', 190);
 	/* サーバのアドレス構造体を作成 */
 	memset(&echoServAddr, 0, sizeof(echoServAddr));		/* 構造体にゼロを埋める */
 	echoServAddr.sin_family = AF_INET;			/* インターネットアドレスファミリ */
 	echoServAddr.sin_addr.s_addr = inet_addr(servIP);	/* サーバのIPアドレス */
 	echoServAddr.sin_port = htons(echoServPort);		/* サーバのポート番号 */
 
-	/* エコーサーバへの接続を確立 */
 	if (connect(sock, (struct sockaddr *) &echoServAddr, sizeof(echoServAddr)) < 0)
 		DieWithError("connect() failed");
 	while (1) {
@@ -56,19 +56,18 @@ int main(int argc, char *argv[])
 		if (send(sock, echoString, echoStringLen, 0) != echoStringLen)
 			DieWithError("send() sent a different number of bytes than expected");
 		
-		// for (int i=0; i<=100; i++) { 
-		// echoBuffer[i] = '\0'; 
-		// }
 
 		/* 同じ文字列をサーバから受信 */
 		totalBytesRcvd = 0;
-	
+		printf("debug");fflush(stdout);
 		while (totalBytesRcvd < echoStringLen)
 		{
 			/* バッファサイズに達するまで（ヌル文字用の1バイトを除く）
 				サーバからのデータを受信する */
+			printf("debug");fflush(stdout);
 			if ((bytesRcvd = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)
 				DieWithError("recv() failed or connection closed prematurely");
+			printf("debug");fflush(stdout);
 			totalBytesRcvd += bytesRcvd;	/* 総バイト数の集計 */
 			echoBuffer[bytesRcvd] = '\0' ;	/* 文字列の終了 */
 			printf("%s", echoBuffer);	/* エコーバッファの表示 */
@@ -76,9 +75,8 @@ int main(int argc, char *argv[])
 		if (!strcmp(echoString, "quit")) {
 			break;
 		}
-		for (int i=0; i<BUFSIZ; i++) {
-		echoBuffer[i] = '\0';
-		}
+  		memset(&echoString[0], '\0', 190);
+  		memset(&echoBuffer[0], '\0', 190);
 		printf("\n");	/* 最後の改行を出力 */
 	}	
 	close(sock);

@@ -14,10 +14,10 @@ void HandleTCPClient(int clntSocket)
   char echoBuffer[RCVBUFSIZE];  
   int recvMsgSize;  
   
-  memset(&echoBuffer[0], '\0', 50);
   
   while (recvMsgSize > 0) 
   {
+    memset(&echoBuffer[0], '\0', RCVBUFSIZE);
     if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
       DieWithError("recv() failed");
 
@@ -82,12 +82,13 @@ void HandleTCPClient(int clntSocket)
       }
     } else if (!strcmp(echoBuffer, "squit")) {
       exit(0);
+    } else if (!strcmp(echoBuffer, "help")) {
+      strcpy(echoBuffer, "\n\ncommand:\nhello\nsquit\nc言語は\n住所は\nanagram\nage\n今の時刻は\n好きな言語は\n");
     } else {
         printf("received: %s\n", echoBuffer);
         strcpy(echoBuffer, "I don't know!");
       }
-    send(clntSocket, echoBuffer, 30, 0);
-    memset(&echoBuffer[0], '\0', 50);
+    send(clntSocket, echoBuffer, 200, 0);
   }
 
   close(clntSocket);  
